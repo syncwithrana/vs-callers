@@ -1,0 +1,21 @@
+{
+  "name": "markmap-preview",
+  "displayName": "Markmap Preview",
+  "description": "Preview Markmap HTML in WebView",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "activationEvents": [
+    "command:markmap.preview"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "markmap.preview",
+        "title": "Markmap: Open Preview"
+      }
+    ]
+  }
+}
