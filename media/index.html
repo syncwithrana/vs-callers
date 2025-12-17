@@ -12,13 +12,39 @@
   <script src="https://d3js.org/d3.v6.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/hari-sh/flowjs/inc/d3-flextree.js"></script>
   <script src="treeview.js"></script>
-
   <script>
+  const vscode = acquireVsCodeApi();
+  const pending = new Map();
 
+  window.getTags = function (tagName) {
+    return new Promise(resolve => {
+      const id = Math.random().toString(36);
+
+      pending.set(id, resolve);
+
+      vscode.postMessage({
+        type: 'getTags',
+        id,
+        tagName
+      });
+    });
+  };
+
+  window.addEventListener('message', e => {
+    const msg = e.data;
+
+    if (msg.type === 'getTags:response') {
+      const resolve = pending.get(msg.id);
+      pending.delete(msg.id);
+      resolve(msg.data);
+    }
+  });
+</script>
+  <script>
     window.mm?.destroy();
     window.mm = window.markmap.Markmap.create(
       'svg#mindmap',
-      getTags,
+      window.getTags,
       "a"
     );
   </script>

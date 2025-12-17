@@ -188,10 +188,10 @@
           const newTransform = transform.translate(-e.deltaX / transform.k, -e.deltaY / transform.k);
           this.svg.call(this.zoom.transform, newTransform);
         };
-        this.handleClick = (e, d) => {
+        this.handleClick = async (e, d) =>  {
           let recursive = this.options.toggleRecursively;
           if (isMacintosh ? e.metaKey : e.ctrlKey) recursive = !recursive;
-          this.toggleNode(d.data, recursive);
+          await this.toggleNode(d.data, recursive);
         };
         this.svg = svg.datum ? svg : d3.select(svg);
         this.styleNode = this.svg.append('style');
@@ -228,8 +228,8 @@
         this.styleNode.text(style);
       }
 
-      fetchRandom(data)  {
-            const hashrand = this.getTags(data);
+      async fetchRandom(data)  {
+            const hashrand = await this.getTagsData(2);
             data.children = [];
             hashrand.forEach(element=>  {
                 var data$childObj = {
@@ -245,12 +245,12 @@
       }
 
 
-      toggleNode(data) {
+      async toggleNode(data) {
         var _data$payload2;
         var _data$fold = (_data$payload2 = data.payload) != null && _data$payload2.fold ? 0 : 1;
         if(!_data$fold && !data.hasChild){
           data.hasChild = true;
-          this.fetchRandom(data);
+          await this.fetchRandom(data);
           this.initializeDataArr(data);
         }
           data.payload = _extends({}, data.payload, {
@@ -507,9 +507,9 @@
         });
       }
 
-      static create(svg, getTags, diagStr) {
+      static create(svg, getTagsData, diagStr) {
         const mm = new Markmap(svg, null);
-        mm.getTags = getTags;
+        mm.getTagsData = getTagsData;
         mm.setDataHash(diagStr);
         mm.fit();
         return mm;
@@ -542,14 +542,3 @@
     exports.globalCSS = globalCSS;
     
     })(this.markmap = {}, d3);
-
-
-    function getTags() {
-      const n = Math.floor(Math.random() * 5) + 3;
-      const letters = "abcdefghijklmnopqrstuvwxyz".split("");
-      for (let i = letters.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [letters[i], letters[j]] = [letters[j], letters[i]];
-      }
-      return letters.slice(0, n);
-    }
