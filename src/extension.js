@@ -7,8 +7,8 @@ function getTagsRef(tagName) {
   return letters.slice(0, tagName);
 }
 
-function createPreview(context)  {
-  createPreviewUtil(context.extensionPath, getTagsRef);
+async function createPreview(context)  {
+  await createPreviewUtil(context.extensionPath, getTagsRef);
 }
 
 function activate(context) {

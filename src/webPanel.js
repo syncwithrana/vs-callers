@@ -4,13 +4,32 @@ const fs = require('fs');
 
 let bottomViewColumn = null;
 
-function createPreviewUtil(extensionPath, getTags)  {
+async function ensureBottomGroup() {
+  // Step 1: ensure at least one editor group exists
+  if (vscode.window.visibleTextEditors.length === 0) {
+    await vscode.commands.executeCommand('workbench.action.newUntitledFile');
+  }
+
+  // Step 2: create bottom split ONCE
+  if (!bottomViewColumn) {
+    await vscode.commands.executeCommand(
+      'workbench.action.splitEditorDown'
+    );
+
+    // active editor is now in bottom group
+    bottomViewColumn = vscode.window.activeTextEditor.viewColumn;
+  }
+}
+
+async function createPreviewUtil(extensionPath, getTags)  {
+     await ensureBottomGroup();
      const panel = vscode.window.createWebviewPanel(
         'markmapPreview',
         'Markmap Preview',
         bottomViewColumn ?? vscode.ViewColumn.Active,
         {
           enableScripts: true,
+          retainContextWhenHidden: true,
           localResourceRoots: [
             vscode.Uri.file(path.join(extensionPath, 'media'))
           ]
