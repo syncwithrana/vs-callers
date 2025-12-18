@@ -189,10 +189,20 @@
           this.svg.call(this.zoom.transform, newTransform);
         };
         this.handleClick = async (e, d) =>  {
+          e.preventDefault();
+          e.stopImmediatePropagation();
           let recursive = this.options.toggleRecursively;
           if (isMacintosh ? e.metaKey : e.ctrlKey) recursive = !recursive;
           await this.toggleNode(d.data, recursive);
         };
+
+        this.handleTextClick = async (e, d) =>  {
+          const postData = {data:d.data.content, line:d.data.state.line, file:d.data.state.file}
+          await this.postFileInfo(postData);
+          e.preventDefault();
+          e.stopImmediatePropagation();
+        };
+
         this.svg = svg.datum ? svg : d3.select(svg);
         this.styleNode = this.svg.append('style');
         this.zoom = d3.zoom().filter(event => {
@@ -229,11 +239,13 @@
       }
 
       async fetchRandom(data)  {
-            const hashrand = await this.getTagsData(2);
+            const hashrand = await this.getTagsData(data.content);
             data.children = [];
             hashrand.forEach(element=>  {
                 var data$childObj = {
-                  content: element,
+                  content: element.name,
+                  file:element.file,
+                  line:element.line,
                   children: [
                     {content: "N",
                     isNull: true}
@@ -314,6 +326,8 @@
           const state = item.state;
           const rect = state.el.getBoundingClientRect();
           item.content = state.el.innerHTML;
+          item.state.file = item.file;
+          item.state.line = item.line;
           state.size = [Math.ceil(rect.width) + 1, Math.max(Math.ceil(rect.height), nodeMinHeight)];
           state.key = item.state.path + item.content;
           color(item);
@@ -453,7 +467,7 @@
         });
 
         const foreignObject = nodeMerge.selectAll(childSelector('foreignObject')).data(d => [d], d => d.data.state.key).join(enter => {
-          const fo = enter.append('foreignObject').attr('class', 'markmap-foreign').attr('x', paddingX).attr('y', 0).style('opacity', 0).on('mousedown', stopPropagation).on('dblclick', stopPropagation);
+          const fo = enter.append('foreignObject').attr('class', 'markmap-foreign').attr('x', paddingX).attr('y', 0).style('opacity', 0.2).on('mousedown', stopPropagation).on('dblclick', (e, d) => this.handleTextClick(e, d));
           fo.append('xhtml:div').select(function select(d) {
             let clone = d.data.state.el.cloneNode(true);
             this.replaceWith(clone);
@@ -507,9 +521,10 @@
         });
       }
 
-      static create(svg, getTagsData, diagStr) {
+      static create(svg, getTagsData, postFileInfo, diagStr) {
         const mm = new Markmap(svg, null);
         mm.getTagsData = getTagsData;
+        mm.postFileInfo = postFileInfo;
         mm.setDataHash(diagStr);
         mm.fit();
         return mm;

@@ -21,7 +21,39 @@ async function ensureBottomGroup() {
   }
 }
 
-async function createPreviewUtil(extensionPath, getTags)  {
+
+async function revealLocation(file, line) {
+  const root = vscode.workspace.workspaceFolders?.[0];
+  if (!root) return;
+
+  const fileUri = vscode.Uri.file(
+    path.join(root.uri.fsPath, file)
+  );
+
+  const doc = await vscode.workspace.openTextDocument(fileUri);
+
+  const editor = await vscode.window.showTextDocument(doc, {
+    preview: false,
+    preserveFocus: false
+  });
+
+  const pos = new vscode.Position(line - 1, 0);
+
+  editor.selection = new vscode.Selection(pos, pos);
+
+  editor.revealRange(
+    new vscode.Range(pos, pos),
+    vscode.TextEditorRevealType.InCenter
+  );
+}
+
+
+
+async function postFileInfo(tagData)  {
+  await revealLocation(tagData.file, tagData.line);
+}
+
+async function createPreviewUtil(extensionPath, getTags, gtagSymbol)  {
      await ensureBottomGroup();
      const panel = vscode.window.createWebviewPanel(
         'markmapPreview',
@@ -58,16 +90,21 @@ async function createPreviewUtil(extensionPath, getTags)  {
 
       html = html
         .replace(/href="treeview.css"/g, `href="${mediaPath}/treeview.css"`)
-        .replace(/src="treeview.js"/g, `src="${mediaPath}/treeview.js"`);
+        .replace(/src="treeview.js"/g, `src="${mediaPath}/treeview.js"`)
+        .replace("__SYMBOL__",JSON.stringify(gtagSymbol).slice(1, -1))
 
       panel.webview.html = html;
-      panel.webview.onDidReceiveMessage(msg => {
+      panel.webview.onDidReceiveMessage(async (msg) => {
         if (msg.type === 'getTags') {
+          const data = await getTags(msg.tagName);
           panel.webview.postMessage({
             type: 'getTags:response',
             id: msg.id,
-            data: getTags(msg.tagName)
+            data
           });
+        }
+        if (msg.type === 'postFileInfo') {
+          const data = await postFileInfo(msg.tagName);
         }
       });
     }

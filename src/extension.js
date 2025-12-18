@@ -1,14 +1,28 @@
 const vscode = require('vscode');
 const {createPreviewUtil} = require('./webPanel');
+const {getCallersWithEnclosure, getEnclosingInfoArray} = require('./gtags_callers');
 
-function getTagsRef(tagName) {
-  const n = Math.floor(Math.random() * 5) + 3;
-  const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
-  return letters.slice(0, tagName);
+function getTag(editor) {
+    const tag = editor.document.getText(editor.selection).trim()
+    if (!tag) {
+        const range = editor.document.getWordRangeAtPosition(editor.selection.active);
+        if (range) {
+            return editor.document.getText(range);
+        }
+    }
+    return tag;
+}
+
+async function getTagsRef(tagName) {
+  const callerData = await getCallersWithEnclosure(tagName, vscode.workspace.rootPath);
+  const  result = getEnclosingInfoArray(callerData);
+  return result;
 }
 
 async function createPreview(context)  {
-  await createPreviewUtil(context.extensionPath, getTagsRef);
+  const editor = vscode.window.activeTextEditor;
+  const gtagSymbol = getTag(editor);
+  await createPreviewUtil(context.extensionPath, getTagsRef, gtagSymbol);
 }
 
 function activate(context) {

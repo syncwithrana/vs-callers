@@ -30,6 +30,16 @@
     });
   };
 
+  window.postFileData = function (tagName) {
+      const id = Math.random().toString(36);
+      alert(id);
+      vscode.postMessage({
+        type: 'postFileInfo',
+        id,
+        tagName
+      });
+  };
+
   window.addEventListener('message', e => {
     const msg = e.data;
 
@@ -45,7 +55,8 @@
     window.mm = window.markmap.Markmap.create(
       'svg#mindmap',
       window.getTags,
-      "a"
+      window.postFileData,
+      "__SYMBOL__"
     );
   </script>
 </body>
