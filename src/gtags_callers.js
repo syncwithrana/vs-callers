@@ -91,7 +91,7 @@ function mapByEnclosingFull(callers) {
     const keyObj = {
       name: c.enclosing.name,
       file: c.file,          // enclosing function file
-      line: c.enclosing.line // enclosing function line
+      line: c.line // enclosing function line
     };
 
     // stable string key
