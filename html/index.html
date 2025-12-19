@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Markmap</title>
+  <link rel="stylesheet" href="treeview.css" />
+</head>
+
+<body>
+  <script src="https://d3js.org/d3.v6.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/hari-sh/flowjs/inc/d3-flextree.js"></script>
+  <script src="treeview.js"></script>
+  <script>
+  window.getTags = function (tagName) {
+    const child = [{
+        name : "a"
+    },
+    {
+        name : "b"
+    }];
+    return child;
+  };
+
+  window.postFileData = function (tagName) {
+  };
+
+</script>
+  <script>
+    window.mm?.destroy();
+    window.mm1 = window.markmap.Markmap.create(
+      document.body,
+      window.getTags,
+      window.postFileData,
+      "a"
+    );
+  </script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Markmap Tabs</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Tab bar */
+    #tabs {
+      display: flex;
+      background: #222;
+      color: #eee;
+      padding: 4px;
+    }
+
+    .tab {
+      padding: 6px 12px;
+      margin-right: 4px;
+      background: #333;
+      cursor: pointer;
+      border-radius: 4px 4px 0 0;
+    }
+
+    .tab.active {
+      background: #555;
+    }
+
+    .tab.add {
+      background: #1e90ff;
+      font-weight: bold;
+    }
+
+    /* Content area */
+    #content {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mm-host {
+      position: relative;
+      inset: 0;
+      display: none;
+    }
+
+    .mm-host.active {
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="tabs">
+    <div class="tab add" id="addTab">+</div>
+  </div>
+
+  <div id="content"></div>
+
+  <!-- libs -->
+  <script src="https://d3js.org/d3.v6.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/hari-sh/flowjs/inc/d3-flextree.js"></script>
+  <script src="treeview.js"></script>
+
+  <script>
+    /* APIs */
+    window.getTags = function () {
+      return [{ name: "a" }, { name: "b" }];
+    };
+
+    window.postFileData = function () {};
+
+    /* Tab system */
+    const tabsEl = document.getElementById("tabs");
+    const contentEl = document.getElementById("content");
+    const addTabBtn = document.getElementById("addTab");
+
+    const tabs = [];
+    let activeTab = null;
+    let tabCount = 0;
+
+    function createTab() {
+      tabCount++;
+
+      // tab button
+      const tabEl = document.createElement("div");
+      tabEl.className = "tab";
+      tabEl.textContent = `Tab ${tabCount}`;
+      tabsEl.insertBefore(tabEl, addTabBtn);
+
+      // host for markmap
+      const host = document.createElement("div");
+      host.className = "mm-host";
+      contentEl.appendChild(host);
+
+      // create markmap
+      const mm = window.markmap.Markmap.create(
+        host,
+        window.getTags,
+        window.postFileData,
+        "a"
+      );
+
+      const tab = { tabEl, host, mm };
+      tabs.push(tab);
+
+      tabEl.onclick = () => activateTab(tab);
+      activateTab(tab);
+    }
+
+    function activateTab(tab) {
+      if (activeTab === tab) return;
+
+      tabs.forEach(t => {
+        t.tabEl.classList.remove("active");
+        t.host.classList.remove("active");
+      });
+
+      tab.tabEl.classList.add("active");
+      tab.host.classList.add("active");
+      activeTab = tab;
+    }
+
+    addTabBtn.onclick = createTab;
+
+    // start with one tab
+    createTab();
+  </script>
+</body>
+</html>

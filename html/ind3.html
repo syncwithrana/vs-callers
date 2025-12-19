@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>D3 Tabs – Class Based</title>
+
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: sans-serif;
+    }
+
+    body {
+      display: flex;
+    }
+
+    /* Tabs */
+    .tabs {
+      width: 120px;
+      background: #1e1e1e;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tab {
+      padding: 10px;
+      color: #aaa;
+      cursor: pointer;
+      border-bottom: 1px solid #333;
+    }
+
+    .tab.active {
+      background: #333;
+      color: #fff;
+    }
+
+    .tab.new {
+      color: #4fc3f7;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    /* Content */
+    .content {
+      flex: 1;
+      position: relative;
+    }
+
+    .panel {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .panel.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    svg {
+      width: 100%;
+      height: 100%;
+      background: #0f0f0f;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="tabs" id="tabs">
+    <div class="tab new" id="newTab">+ New</div>
+  </div>
+
+  <div class="content" id="content"></div>
+
+  <script src="https://d3js.org/d3.v6.min.js"></script>
+
+  <script>
+    class LineChartTab {
+      constructor(index, tabsEl, contentEl, onActivate) {
+        this.id = `panel-${index}`;
+        this.title = `Tab ${index}`;
+        this.tabsEl = tabsEl;
+        this.contentEl = contentEl;
+        this.onActivate = onActivate;
+
+        this.createTab();
+        this.createPanel();
+        this.renderChart();
+      }
+
+      createTab() {
+        this.tabEl = document.createElement("div");
+        this.tabEl.className = "tab";
+        this.tabEl.textContent = this.title;
+        this.tabEl.dataset.id = this.id;
+
+        this.tabEl.onclick = () => this.onActivate(this);
+
+        const newTabBtn = document.getElementById("newTab");
+        this.tabsEl.insertBefore(this.tabEl, newTabBtn);
+      }
+
+      createPanel() {
+        this.panelEl = document.createElement("div");
+        this.panelEl.className = "panel";
+        this.panelEl.id = this.id;
+
+        this.svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        this.panelEl.appendChild(this.svg);
+        this.contentEl.appendChild(this.panelEl);
+      }
+
+      renderChart() {
+        const margin = { top: 40, right: 40, bottom: 40, left: 40 };
+        const width = this.svg.clientWidth - margin.left - margin.right;
+        const height = this.svg.clientHeight - margin.top - margin.bottom;
+
+        const g = d3.select(this.svg)
+          .append("g")
+          .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        const data = d3.range(20).map(i => ({
+          x: i,
+          y: Math.random() * 100
+        }));
+
+        const x = d3.scaleLinear()
+          .domain(d3.extent(data, d => d.x))
+          .range([0, width]);
+
+        const y = d3.scaleLinear()
+          .domain([0, 100])
+          .range([height, 0]);
+
+        const line = d3.line()
+          .x(d => x(d.x))
+          .y(d => y(d.y));
+
+        g.append("path")
+          .datum(data)
+          .attr("fill", "none")
+          .attr("stroke", "#4fc3f7")
+          .attr("stroke-width", 2)
+          .attr("d", line);
+
+        g.append("g")
+          .attr("transform", `translate(0,${height})`)
+          .call(d3.axisBottom(x).ticks(5))
+          .attr("color", "#777");
+
+        g.append("g")
+          .call(d3.axisLeft(y).ticks(5))
+          .attr("color", "#777");
+      }
+
+      activate() {
+        this.tabEl.classList.add("active");
+        this.panelEl.classList.add("active");
+      }
+
+      deactivate() {
+        this.tabEl.classList.remove("active");
+        this.panelEl.classList.remove("active");
+      }
+    }
+
+    class TabManager {
+      constructor() {
+        this.tabs = [];
+        this.activeTab = null;
+
+        this.tabsEl = document.getElementById("tabs");
+        this.contentEl = document.getElementById("content");
+        this.newTabBtn = document.getElementById("newTab");
+
+        this.newTabBtn.onclick = () => this.addTab();
+      }
+
+      addTab() {
+        const tab = new LineChartTab(
+          this.tabs.length + 1,
+          this.tabsEl,
+          this.contentEl,
+          (t) => this.activateTab(t)
+        );
+
+        this.tabs.push(tab);
+        this.activateTab(tab);
+      }
+
+      activateTab(tab) {
+        if (this.activeTab) {
+          this.activeTab.deactivate();
+        }
+        this.activeTab = tab;
+        tab.activate();
+      }
+    }
+
+    // init
+    new TabManager();
+  </script>
+</body>
+</html>
