@@ -29,10 +29,12 @@ async function revealLocation(file, line) {
   const fileUri = vscode.Uri.file(
     path.join(root.uri.fsPath, file)
   );
-
+  
+  await vscode.commands.executeCommand('workbench.action.focusActiveEditorGroup');
   const doc = await vscode.workspace.openTextDocument(fileUri);
 
   const editor = await vscode.window.showTextDocument(doc, {
+    ViewColumn: vscode.ViewColumn.One,
     preview: false,
     preserveFocus: false
   });

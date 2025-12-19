@@ -4,7 +4,7 @@ const {createPreview} = require('./markutil');
 
 function activate(context) {
   context.subscriptions.push(
-    vscode.commands.registerCommand('markmap.preview', () => createPreview(context))
+    vscode.commands.registerCommand('gtags.getCallers', () => createPreview(context))
   );
 }
 

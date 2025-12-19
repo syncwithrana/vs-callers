@@ -1,10 +1,11 @@
-import { spawn } from "child_process";
-
-/* ------------------ helpers ------------------ */
+const { spawn } = require("child_process");
+const vscode = require("vscode");
+const config = vscode.workspace.getConfiguration("gtags");
+const globalCmd = config.get("globalCommand") || "global";
 
 function runGlobal(args, cwd) {
   return new Promise((resolve, reject) => {
-    const p = spawn("global", args, { cwd });
+    const p = spawn(globalCmd, args, { cwd });
 
     let out = "";
     let err = "";
@@ -110,45 +111,41 @@ function mapByEnclosingFull(callers) {
   return map;
 }
 
+const HEADERS_EXTENSIONS = [".h", ".hpp", ".hh", ".hxx"];
 
-
-
-/* ------------------ example usage ------------------ */
-
-// run directly: node gtagsCallflow.js console_putc /path/to/project
-if (process.argv.length >= 4) {
-  const symbol = process.argv[2];
-  const cwd = process.argv[3];
-
-  (async () => {
-    const result = await getCallersWithEnclosure(symbol, cwd);
-    console.log(JSON.stringify(result, null, 2));
-  })().catch(err => {
-    console.error(err);
-    process.exit(1);
-  });
+function isHeaderFile(file) {
+  return HEADERS_EXTENSIONS.some(ext => file.endsWith(ext));
 }
 
+function removeHeadersAndDuplicates(enclosed) {
+  const nonHeaders = enclosed.filter(
+    e => !isHeaderFile(e.file)
+  );
+  const nameCounts = new Map();
+  for (const e of nonHeaders) {
+    const name = e.name ?? null;
+    nameCounts.set(name, (nameCounts.get(name) || 0) + 1);
+  }
+  const uniqueEnclosed = nonHeaders.filter(
+    e => nameCounts.get(e.name) === 1
+  );
+  return uniqueEnclosed;
+}
 
 function getEnclosingInfoArray(callers) {
-  return callers
+  const enclosed = callers
     .filter(c => c.enclosing)
     .map(c => ({
       name: c.enclosing.name,
       file: c.file,
       line: c.enclosing.line
     }));
-}
-
-function getEnclosingInfoArray__(callers) {
-  return callers
-    .filter(c => c.enclosing)
-    .map(c => c.enclosing.name);
+    return removeHeadersAndDuplicates(enclosed);
 }
 
 /* ------------------ exports ------------------ */
 
-export {
+module.exports = {
   getCallers,
   getCallersWithEnclosure,
   getEnclosingFunction,

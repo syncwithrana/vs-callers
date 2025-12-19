@@ -16,7 +16,7 @@ function getTag(editor) {
 async function getTagsRef(tagName) {
   const callerData = await getCallersWithEnclosure(tagName, vscode.workspace.rootPath);
   const  result = getEnclosingInfoArray(callerData);
-  return result;
+  return result.filter(obj => obj.name !== tagName);
 }
 
 async function createPreview(context)  {

@@ -1,21 +1,34 @@
 {
-  "name": "markmap-preview",
-  "displayName": "Markmap Preview",
+  "name": "gtags-coderef",
+  "displayName": "gtags-coderef",
   "description": "Preview Markmap HTML in WebView",
   "version": "0.0.1",
+  "publisher": "hari kalyan",
   "engines": {
     "vscode": "^1.85.0"
   },
-  "activationEvents": [
-    "command:markmap.preview"
-  ],
   "main": "./src/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "markmap.preview",
-        "title": "Markmap: Open Preview"
+        "command": "gtags.getCallers",
+        "title": "Gtags: Get Function Callers"
       }
-    ]
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "gtags.getCallers",
+          "when": "editorTextFocus",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^3.7.1"
   }
 }
