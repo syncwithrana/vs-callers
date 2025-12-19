@@ -5,22 +5,18 @@ const fs = require('fs');
 let bottomViewColumn = null;
 
 async function ensureBottomGroup() {
-  // Step 1: ensure at least one editor group exists
   if (vscode.window.visibleTextEditors.length === 0) {
     await vscode.commands.executeCommand('workbench.action.newUntitledFile');
   }
 
-  // Step 2: create bottom split ONCE
   if (!bottomViewColumn) {
     await vscode.commands.executeCommand(
       'workbench.action.splitEditorDown'
     );
 
-    // active editor is now in bottom group
     bottomViewColumn = vscode.window.activeTextEditor.viewColumn;
   }
 }
-
 
 async function revealLocation(file, line) {
   const root = vscode.workspace.workspaceFolders?.[0];
@@ -58,8 +54,8 @@ async function postFileInfo(tagData)  {
 async function createPreviewUtil(extensionPath, getTags, gtagSymbol)  {
      await ensureBottomGroup();
      const panel = vscode.window.createWebviewPanel(
-        'markmapPreview',
-        'Markmap Preview',
+        gtagSymbol,
+        gtagSymbol,
         bottomViewColumn ?? vscode.ViewColumn.Active,
         {
           enableScripts: true,
@@ -93,6 +89,8 @@ async function createPreviewUtil(extensionPath, getTags, gtagSymbol)  {
       html = html
         .replace(/href="treeview.css"/g, `href="${mediaPath}/treeview.css"`)
         .replace(/src="treeview.js"/g, `src="${mediaPath}/treeview.js"`)
+        .replace(/src="d3.js"/g, `src="${mediaPath}/d3.js"`)
+        .replace(/src="d3-flextree.js"/g, `src="${mediaPath}/d3-flextree.js"`)
         .replace("__SYMBOL__",JSON.stringify(gtagSymbol).slice(1, -1))
 
       panel.webview.html = html;

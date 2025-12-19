@@ -1,10 +1,9 @@
 const vscode = require('vscode');
 const {createPreview} = require('./markutil');
 
-
 function activate(context) {
   context.subscriptions.push(
-    vscode.commands.registerCommand('gtags.getCallers', () => createPreview(context))
+    vscode.commands.registerCommand('extension.getCallers', () => createPreview(context))
   );
 }
 

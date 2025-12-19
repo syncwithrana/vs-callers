@@ -1,24 +1,49 @@
 {
   "name": "gtags-coderef",
   "displayName": "gtags-coderef",
-  "description": "Preview Markmap HTML in WebView",
-  "version": "0.0.1",
-  "publisher": "hari kalyan",
+  "icon": "icon.png",
+  "description": "gtags-code is a Visual Studio Code extension that integrates GNU Global (gtags) for efficient code navigation and symbol searching within your projects.",
+  "publisher": "harikalyan",
+  "version": "0.1.0",
   "engines": {
-    "vscode": "^1.85.0"
+    "vscode": "^1.80.0"
   },
+  "categories": [
+    "Programming Languages",
+    "Language Packs"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hari-sh/gtags-code"
+  },
+  "activationEvents": [],
   "main": "./src/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "gtags-code configuration",
+      "properties": {
+        "gtags-code.globalCmd": {
+          "type": "string",
+          "default": "global",
+          "description": "Path to the global executable"
+        },
+        "gtags-code.gtagsCmd": {
+          "type": "string",
+          "default": "gtags",
+          "description": "Path to gtags executable."
+        }
+      }
+    },
     "commands": [
       {
-        "command": "gtags.getCallers",
-        "title": "Gtags: Get Function Callers"
+        "command": "extension.getCallers",
+        "title": "GTags: Get Callers"
       }
     ],
     "menus": {
-      "explorer/context": [
+      "editor/context": [
         {
-          "command": "gtags.getCallers",
+          "command": "extension.getCallers",
           "when": "editorTextFocus",
           "group": "navigation"
         }
@@ -26,9 +51,16 @@
     }
   },
   "scripts": {
+    "bundle": "node build.js",
+    "vscode:prepublish": "node build.js",
     "package": "vsce package"
   },
+  "dependencies": {
+    "classic-level": "^3.0.0",
+    "node-gyp-build": "^4.8.4"
+  },
   "devDependencies": {
-    "@vscode/vsce": "^3.7.1"
+    "@vscode/vsce": "^3.7.1",
+    "esbuild": "^0.25.5"
   }
 }
